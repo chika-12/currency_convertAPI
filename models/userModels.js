@@ -36,8 +36,25 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Where are you from'],
     validate: {
       validator: function (value) {
-        const allCountries = Object.values(countries.getNames('en'));
-        return allCountries.includes(value);
+        const allCountries = Object.values(countries.getNames('en')).map(
+          (name) => name.toLocaleLowerCase()
+        );
+        return allCountries.includes(value.toLocaleLowerCase());
+      },
+      method: (props) => `${props.value} is not a recognized nation`,
+    },
+  },
+  bio: {
+    type: String,
+  },
+  country_of_residence: {
+    type: String,
+    validate: {
+      validator: function (value) {
+        const allCountries = Object.values(countries.getNames('en')).map(
+          (name) => name.toLocaleLowerCase()
+        );
+        return allCountries.includes(value.toLocaleLowerCase());
       },
       method: (props) => `${props.value} is not a recognized nation`,
     },
@@ -55,6 +72,9 @@ userSchema.pre('save', async function (next) {
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
 });
+userSchema.methods.comparePassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
 
 const User = mongoose.model('user', userSchema);
 module.exports = User;

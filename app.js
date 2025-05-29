@@ -3,9 +3,11 @@ const app = express();
 const userRouter = require('./routes/userRoute');
 const errorController = require('./controllers/errorController');
 const AppError = require('./utils/appError');
+const currencyRouter = require('./routes/conversionRoute');
 
 app.use(express.json());
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/rates', currencyRouter);
 
 app.all('*', (req, res, next) => {
   return next(

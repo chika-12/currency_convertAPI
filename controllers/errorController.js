@@ -8,7 +8,7 @@ const castErrorHandler = (err) => {
 const validationErrorHandler = (err) => {
   let messages = [];
   for (const field in err.errors) {
-    if (field === 'nationality') {
+    if (field === 'nationality' || field === 'country_of_residence') {
       const value = err.errors[field].value;
       messages.push(`'${value}' is not a nation.`);
     } else {
@@ -28,7 +28,6 @@ const mongoServerError = (err) => {
   return new AppError(message, 401);
 };
 const productionError = (error, res) => {
-  console.log('To the error', error.statusCode);
   if (error.isOperational) {
     res.status(error.statusCode).json({
       status: error.status,
@@ -62,8 +61,6 @@ const errorController = (err, req, res, next) => {
   error.statusCode = err.statusCode || 500;
   error.status = err.status || 'error';
 
-  console.log(error.statusCode);
-
   if (err.name === 'CastError') {
     error = castErrorHandler(err);
   }
@@ -75,8 +72,6 @@ const errorController = (err, req, res, next) => {
     error = mongoServerError(err);
   }
   if (process.env.NODE_ENV === 'production') {
-    console.log('I came here');
-    console.log(error.isOperational);
     productionError(error, res);
   } else if (process.env.NODE_ENV === 'development') {
     developmentError(error, res);
